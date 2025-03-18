@@ -8,9 +8,16 @@ The script **energy-reporter.py** reads recorded power data from an InfluxDB, in
 ## Dependencies
 The energy-reporter requires
 * python 3.6 or newer
-* the influxdb_client python library
+* the influxdb-client python library version 1.31 or newer
 
-## Setup
+### Installing dependencies and usage with a python virtual environment (venv)
+```sh
+python3 -m venv --system-site-packages ~/venvs/WindHPC-energy-reporter
+source ~/venvs/WindHPC-energy-reporter/bin/activate
+python3 -m pip -r requirements.txt
+```
+
+## Environment setup
 To work the URL and token for the InfluxDB has to be provided as environment variables before running the energy-reporter:
 ```sh
 export INFLUX_URL="<URL>"

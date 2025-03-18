@@ -1,16 +1,51 @@
 #!/usr/bin/env python3
+#
+# Copyright (c) 2025       High Performance Computing Center Stuttgart,
+#                          University of Stuttgart.  All rights reserved.
+#
 
+import argparse
+import logging
 import os
-import sys
+import re
 
-def main(args):
-    if len(args) < 2:
-        print("usage: query time_start time_end node_0 node_1 node_2 ...")
-        print("time_start and time_end must be in timestamp format (seconds since 1970-01-01 00:00:00 UTC)")
-        quit()
+from datetime import datetime
 
-    t_start = args[0]
-    t_end = args[1]
+def parse_time_str(time_str):
+    """Parse time from 'now', ISO 8601, or epoch"""
+    # parse 'now'
+    if time_str.lower() == "now":
+        return datetime.now()
+    # parse epoche
+    if re.match(r"^\d+$", time_str):
+        return datetime.fromtimestamp(int(time_str))
+    # parse ISO 8601 (YYYY-MM-DDThh:mm:ss) or fail
+    try:
+        return datetime.fromisoformat(time_str)
+    except ValueError:
+        raise ValueError(f"Invalid time format: {time_str}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="%(prog)s: Collects energy data for a given time period on specified computenodes"
+        )
+    parser.add_argument("--nodefile", type=argparse.FileType('r'), help="nodefile containing nodenames (one node per line)")
+    parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
+    parser.add_argument("-V", "--version", help="print version information and exit", action="version", version="%(prog)s 0.1")
+    parser.add_argument("--start", help="start time as ISO 8601, epoch or 'now' (default: %(default)s)", default="now")
+    parser.add_argument("--end", help="end time as ISO 8601, epoch or 'now' (default: %(default)s)", default="now")
+    parser.add_argument("nodelist", nargs="*", help="list of nodenames")
+
+    args = parser.parse_args()
+
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format="[%(levelname)s] %(message)s"
+    )
+
+    logging.debug(f"Command line arguments: {args}")
 
     from influxdb_client import InfluxDBClient, Point
     from influxdb_client.client.write_api import SYNCHRONOUS
@@ -22,30 +57,29 @@ def main(args):
     query_api = client.query_api()
 
 
-    ## using Table structure
-    query='from(bucket:"training") \
-            |> range(start: ' + t_start + ' ,stop: ' + t_end + ') \
-            |> filter(fn: (r) => r["_measurement"] == "ipmi_sensor") \
-            |> filter(fn: (r) => r["name"] == "ps2_input_power") \
-            |> map(fn: (r) => ({ r with _time: int(v: r._time)}))'
+    t_start = int(parse_time_str(args.start).timestamp())
+    t_end = int(parse_time_str(args.end).timestamp())
+    query=f"""from(bucket:"training")
+            |> range(start: {t_start} ,stop: {t_end})
+            |> filter(fn: (r) => r["_measurement"] == "ipmi_sensor")
+            |> filter(fn: (r) => r["name"] == "ps2_input_power")
+            |> map(fn: (r) => ({{ r with _time: int(v: r._time)}}))"""
 
-    #print(query)
+    logging.debug(f"Query: {query}")
 
     # tables contains data for all nodes in the specified time frame
     tables = query_api.query(query)
 
-    # these WINDHPC nodes exist
-    windhpc_nodes_all = ["n012001", "n012201", "n012401", "n012601", "n012801"]
-
     # fill list with nodes from command line
-    windhpc_nodes =[]
-    for i in range(2, len(args)):
-        windhpc_nodes.append(args[i])
-
-    #print (windhpc_nodes)
+    nodes = args.nodelist
+    # append nodes from nodefile
+    if args.nodefile :
+        for line in args.nodefile:
+            nodes.append(line.strip())
+    logging.debug(f"Nodes: {nodes}")
 
     # loop over nodes
-    for host_name in windhpc_nodes:
+    for host_name in nodes:
         print("# time_[s] power_[W]_" + host_name)
         energy=0
         t_first_a=-1
@@ -55,7 +89,6 @@ def main(args):
 
         # loop over tables
         for table in tables:
-            #print(table)
             for row in table.records:
                 if row["host"] == host_name:
                     # print (row.values)
@@ -86,4 +119,4 @@ def main(args):
         print ("")
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

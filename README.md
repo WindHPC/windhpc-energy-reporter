@@ -1,17 +1,39 @@
-# WindHPC-energy-reporter
+WindHPC-energy-reporter
+=======================
+
 The script **energy-reporter.py** reads recorded power data from an InfluxDB, integrates the data and reports the consumed energy per node.
+
+# Getting started
+
+## Dependencies
+The energy-reporter requires
+* python 3.6 or newer
+* the influxdb_client python library
+
+## Setup
+To work the URL and token for the InfluxDB has to be provided as environment variables before running the energy-reporter:
+```sh
+export INFLUX_URL="<URL>"
+export INFLUX_TOKEN="<TOKEN>"
+```
 
 ## Basic usage
 
-**energy-reporter.py** is controled via the command line:
+The energy-reporter collects energy usage information for a given time period and specified nodes.
 
-`energy-reporter.py time_start time_end node_0 node_1 node-2 ...`
+On the WindHPC HLRS system the energy data come from an InfluxDB.
 
-time_start and time_end must be in timestamp format, i.e. seconds since 1970-01-01 00:00:00 UTC.
+**energy-reporter.py** is controlled via the command line:
 
-The list of nodes must contain one or more of the nodes for which data is returned from the database.
+```sh
+energy-reporter.py --start <time_start> --end <time_end> node_0 node_1 node-2 ...
+```
 
-At HLRS, the following nodes are available:
+time_start and time_end can be provide as ISO 8601 (YYYY-MM-DDThh:mm:ss), epoche (seconds since 1970-01-01 00:00:00 UTC), or the string 'now'
+
+The list of nodes must contain one or more of the nodes for which data shall be obtained from the database. The list of nodes can be provided either via a nodefile (e.g., `$PBS_NODEFILE`) or as individual node names.
+
+At the WindHPC HLRS system, the following nodes are currently available:
 
 - n012001
 - n012201
@@ -20,16 +42,16 @@ At HLRS, the following nodes are available:
 - n012801
 
 
-## Usage in job script
-```
+## Usage in a PBS job script
+```sh
+#!/bin/bash
+#PBS -l ...
+
 t_start=$(date +%s)
 
-your code
+# run your code/application here
 
 t_end=$(date +%s)
-python3 ./energy-reporter.py $t_start $t_end n012001 n012201 n012401 n012601
+
+./energy-reporter.py --start $t_start --end $t_end --nodefile $PBS_NODEFILE
 ```
-
-
-## Adaption
-In order to use the script on other systems, the url and the token in the creation of the `client` object must be adapted. 

@@ -14,7 +14,7 @@ The energy-reporter requires
 ```sh
 python3 -m venv --system-site-packages ~/venvs/WindHPC-energy-reporter
 source ~/venvs/WindHPC-energy-reporter/bin/activate
-python3 -m pip -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 ## Environment setup

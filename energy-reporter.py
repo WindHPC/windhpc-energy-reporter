@@ -21,7 +21,7 @@ def parse_time_str(time_str):
         return datetime.fromtimestamp(int(time_str))
     # parse ISO 8601 (YYYY-MM-DDThh:mm:ss) or fail
     try:
-        return datetime.fromisoformat(time_str)
+        return datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S")
     except ValueError:
         raise ValueError(f"Invalid time format: {time_str}")
 

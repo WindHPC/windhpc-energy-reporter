@@ -18,10 +18,12 @@ python3 -m pip install -r requirements.txt
 ```
 
 ## Environment setup
-To work the URL and token for the InfluxDB has to be provided as environment variables before running the energy-reporter:
-```sh
-export INFLUX_URL="<URL>"
-export INFLUX_TOKEN="<TOKEN>"
+To work the URL and token for the InfluxDB has to be provided. This can be done via an `.env` file
+or as environment variables before running the energy-reporter:
+```
+# .env file content:
+INFLUX_URL=<URL>
+INFLUX_TOKEN=<TOKEN>
 ```
 
 ## Basic usage

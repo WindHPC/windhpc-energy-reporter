@@ -42,6 +42,7 @@ PDU_HOSTS = ["windhpc00"]
 USE_IPMI_SENSORS_EXTRA_ARGS = False
 PSU_IPS = # TODO: Add list of two PDU addresses!
 
+
 def get_ipmi_power() -> None:
     cmd = ["/usr/bin/sudo", "/usr/sbin/ipmi-sensors"]
     if USE_IPMI_SENSORS_EXTRA_ARGS:
@@ -176,9 +177,9 @@ def run(sensor: str, interval: float) -> None:
 
 
 def main() -> int:
-    assert len(sys.argv) >= 3, (
-        f"Usage: {sys.argv[0]} <interval> <sensor> [sensor args...]"
-    )
+    assert (
+        len(sys.argv) >= 3
+    ), f"Usage: {sys.argv[0]} <interval> <sensor> [sensor args...]"
     interval = float(sys.argv[1])
     sensor = sys.argv[2]
     assert sensor in ["ipmi_sensor", "pdu_sensor", "rapl_counter"], "Invalid sensor"

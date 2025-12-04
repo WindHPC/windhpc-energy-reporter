@@ -39,7 +39,7 @@ def main():
     )
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
     parser.add_argument(
-        "-E", "--energy-only", help="do not output power", action="store_true"
+        "-E", "--energy-only", help="Only output consumed energy", action="store_true"
     )
     parser.add_argument(
         "-V",

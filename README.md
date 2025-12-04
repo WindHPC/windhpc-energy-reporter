@@ -21,9 +21,9 @@ python3 -m pip install -r requirements.txt
 
 ### Environment setup
 
-To work the URL and token for the InfluxDB has to be provided as environment variables. Additionally, the cluster has to be selected due to small differences in the setup. Valid values for `WINDHPC_SYSTEM` are: *TrainingHLRS* and *HSU*
+The URL and token for the InfluxDB must be provided as environment variables. Additionally, the cluster must be selected due to small differences in the setup. Valid options for `WINDHPC_SYSTEM` are: *TrainingHLRS* and *HSU*
 
-This can be done via an `.env` file
+These values can be provided via an `.env` file (preferred)
 or as environment variables before running the energy-reporter:
 
 ```sh
